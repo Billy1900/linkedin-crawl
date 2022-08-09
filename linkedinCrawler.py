@@ -2,6 +2,7 @@ import glob
 import os
 import time
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import NoSuchElementException
 from browser import Browser
 from UserInfo import secret
 from utils import RetryException, retry
@@ -67,39 +68,51 @@ class Crawler(Logging):
                 raise RetryException()
 
         check_login()
+    
+    def profile_list(self, url):
+        url_list = []
+        self.browser.driver.get(url)
+        profile_section = self.browser.driver.find_elements(By.XPATH, '//*[@class="entity-result__title-text t-16"]/a')
+
+        for item in profile_section:
+            url_list.append(item.get_attribute("href"))
+
+        return url_list
 
     def profile_info(self, url):
         self.browser.driver.get(url)
-        # name
-        name = self.browser.find_one('#ember30 > div.ph5 > div.mt2.relative > div:nth-child(1) > div:nth-child(1) > h1')
+        # name, //*[@id="ember36"]/div[2]/div[2]/div[1]/div[1]/h1
+        name = self.browser.driver.find_element(By.XPATH, '//*[@class="text-heading-xlarge inline t-24 v-align-middle break-words"]')
         if name is None:
-            name = ''
+            name = 'Name None'
         else:
             name = name.text.strip()
         print(name)
         # overview
-        overview = self.browser.find_one(
-            '#ember30 > div.ph5 > div.mt2.relative > div:nth-child(1) > div.text-body-medium.break-words')
+        overview = self.browser.driver.find_element(By.XPATH, '//*[@class="text-body-medium break-words"]')
         if overview is None:
-            overview = ''
+            overview = 'Overview None'
         else:
             overview = overview.text.strip()
         print(overview)
 
         # location
-        location = self.browser.find_one(
-            '#ember30 > div.ph5 > div.mt2.relative > div.pb2.pv-text-details__left-panel > span.text-body-small.inline.t-black--light.break-words')
+        location = self.browser.driver.find_element(By.XPATH, '//*[@class="text-body-small inline t-black--light break-words"]')
         if location is None:
-            location = ''
+            location = 'Location None'
         else:
             location = location.text.strip()
         print(location)
 
         # about
-        about = self.browser.driver.find_element(By.XPATH,
+        try:
+            about = self.browser.driver.find_element(By.XPATH,
                                                  '//*[@class="artdeco-card ember-view relative break-words pb3 mt2 "]/div[3]/div/div/div/span[1]')
+        except NoSuchElementException:
+            about = None
+
         if about is None:
-            about = 'None'
+            about = 'About None'
         else:
             about = about.text.strip()
         print(about)
@@ -108,7 +121,7 @@ class Crawler(Logging):
         sections = self.browser.driver.find_elements(By.XPATH,
                                                     '//*[@class="artdeco-card ember-view relative break-words pb3 mt2 "]/div[3]/ul/li')
         if sections is None:
-            sections = ''
+            sections = 'Section None'
 
         edu = []
         experience = []
@@ -122,18 +135,19 @@ class Crawler(Logging):
                     single_item_str += item
                     single_item_str += ","
 
-            MONTH = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-            cnt_month = 0
-            for it in MONTH:
-                if it.lower() not in single_item_str.lower():
-                    cnt_month += 1
-
-            if cnt_month == 12:
-                continue  # skip those which do not have date string
+            # there are some people do not add the year of entering college, though not convincing, but still crawl
+            # MONTH = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+            # cnt_month = 0
+            # for it in MONTH:
+            #     if it.lower() not in single_item_str.lower():
+            #         cnt_month += 1
+            #
+            # if cnt_month == 12:
+            #     continue  # skip those which do not have date string
 
             if "university" in single_item_str.lower() or "college" in single_item_str.lower():
                 edu.append(single_item_str)
-            elif "intern" in single_item_str.lower() or "full-time" in single_item_str.lower():
+            elif "intern" in single_item_str.lower() or "full-time" in single_item_str.lower() or "Quant" in single_item_str.lower() or "Quantitative" in single_item_str.lower() or "Research" in single_item_str.lower():
                 experience.append(single_item_str)
 
         print(experience)

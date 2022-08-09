@@ -4,4 +4,4 @@ class SecretSetting:
         self.password = password
 
 
-secret = SecretSetting("username", "passwd")
+secret = SecretSetting("billyrobertluo@gmail.com", "lnqzmf990404")
