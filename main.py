@@ -17,14 +17,19 @@ def get_profile_list(linkedin):
 
 def driver_main():
     linkedin = Crawler()
-    profile_list = get_profile_list(linkedin)
-    print(profile_list)
-    if len(profile_list) == 0:
-        print("profile list is 0")
-        return
+    # profile_list = get_profile_list(linkedin)
+    # print(profile_list)
+    # if len(profile_list) == 0:
+    #     print("profile list is 0")
+    #     return
 
-    for url in profile_list:
-        linkedin.profile_info(str(url))
+    # for url in profile_list:
+    #     linkedin.profile_info(str(url))
+
+    follower_list = linkedin.get_follower_list()
+    print(len(follower_list))
+    for url in follower_list:
+        print(url)
 
 
 if __name__ == '__main__':

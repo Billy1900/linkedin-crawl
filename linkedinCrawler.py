@@ -78,6 +78,30 @@ class Crawler(Logging):
             url_list.append(item.get_attribute("href"))
 
         return url_list
+    
+    def get_follower_list(self):
+        follower_url_set = set()
+        follower_url = "https://www.linkedin.com/feed/followers/"
+        self.browser.driver.get(follower_url)
+
+        # Get scroll height
+        last_height = self.browser.driver.execute_script("return document.body.scrollHeight")
+
+        while True:
+            self.browser.scroll_down()
+
+            # Calculate new scroll height and compare with last scroll height
+            new_height = self.browser.driver.execute_script("return document.body.scrollHeight")
+            if new_height == last_height:
+                break
+            last_height = new_height
+                
+            followers_section = self.browser.driver.find_elements(By.XPATH, '//*[@class="follows-recommendation-card__info"]/a')
+
+            for item in followers_section:
+                follower_url_set.add(item.get_attribute("href"))
+    
+        return follower_url_set
 
     def profile_info(self, url):
         self.browser.driver.get(url)
