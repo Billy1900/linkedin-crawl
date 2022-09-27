@@ -68,11 +68,14 @@ class Crawler(Logging):
                 raise RetryException()
 
         check_login()
+        
+        if browser.driver.find_element(By.XPATH, '//*[@id="continue-link-wrapper"]/a[2]'):
+            browser.driver.find_element(By.XPATH, '//*[@id="continue-link-wrapper"]/a[2]').click()
     
     def profile_list(self, url):
         url_list = []
         self.browser.driver.get(url)
-        profile_section = self.browser.driver.find_elements(By.XPATH, '//*[@class="entity-result__title-text t-16"]/a')
+        profile_section = self.browser.driver.find_elements(By.XPATH, '//*[@class="app-aware-link scale-down"]')
 
         for item in profile_section:
             url_list.append(item.get_attribute("href"))
